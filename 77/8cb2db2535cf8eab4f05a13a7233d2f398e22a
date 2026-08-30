@@ -1,0 +1,25 @@
+.pi/fresh-session-handoff/config.json
+  s_3a287577ef0d27::t_9855d6bca61cb3 1-17
+.pi/fresh-session-handoff/task-manifest.v1.json
+  s_3a287577ef0d27::t_21fc79ee8321d7 1-34
+src/extension.ts
+  s_3a287577ef0d27::t_2a47c583073bf6 1-430
+src/index.ts
+  s_3a287577ef0d27::t_9ae61ea56d622c 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "778cb2db2535cf8eab4f05a13a7233d2f398e22a",
+  "prompts": {},
+  "sessions": {
+    "s_3a287577ef0d27": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019f17f7-b570-7a6a-9f50-817745d03cdb",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
