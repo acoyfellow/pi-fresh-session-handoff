@@ -1,0 +1,37 @@
+README.md
+  s_0a87e8fcc24611::t_a59d1e1b10f11a 50-51,53,56-60,67,69,71
+docs/architecture-limits.md
+  s_0a87e8fcc24611::t_10978b567cc322 14,38-40
+docs/benchmark-harness.md
+  s_0a87e8fcc24611::t_bd634cf372d5cc 5-15,23,26-33,37,39-43,47-65,69-70,80-82,85-87,94-95,100-101,106-112,118-129,142,146,151-152
+package.json
+  s_0a87e8fcc24611::t_f9655f46c14ff2 11-12,14
+scripts/benchmark-capability-probe.mjs
+  s_0a87e8fcc24611::t_45fa0fa6e7531d 1-80
+scripts/benchmark-harness-lib.mjs
+  s_0a87e8fcc24611::t_ca91a74b0fda94 89-96,104-127,136-142,208-210,212-213,216-230,234-235,237-286,289,293-295,297-298,302-306,309-317,328,330-341,399-411,457-584,600-610,619-622,627-630,645,648,659-660,679-680,687,727,733,738-741,743-744,748,757-758,761-774,776-788,790-810,812-817,819-829,831-835,888-903,937-942,949,957,963,989-996,1004-1006,1010-1011,1016-1024,1030-1038,1043,1047-1054,1064-1071,1073-1108,1111,1116-1123,1132-1133,1135
+scripts/gate.mjs
+  s_0a87e8fcc24611::t_d7510e4d511147 17-19,24
+src/core/thresholds.ts
+  s_0a87e8fcc24611::t_9db52fd364a1be 24-30
+src/extension.ts
+  s_0a87e8fcc24611::t_eb895af1c4457d 23-28,513-516
+tests/threshold-notification-switch.test.ts
+  s_0a87e8fcc24611::t_aeff7dc6e0356e 7,117-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3b7a14770068d45397bb18c6f80c8c18b51cb398",
+  "prompts": {},
+  "sessions": {
+    "s_0a87e8fcc24611": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a038fe-d370-7a9e-b05c-ce3bd6601a10",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
