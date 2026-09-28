@@ -1,0 +1,41 @@
+README.md
+  s_cad21ecb728adb::t_613835ff26c639 23,89
+docs/hooks.md
+  s_cad21ecb728adb::t_5a9db1c66b67bb 1-79
+src/core/hooks.ts
+  s_cad21ecb728adb::t_7a414fa55da58e 1-188
+src/extension.ts
+  s_7410e04aafe3da::t_c89f8c297df395 29-39,520-596
+src/hooks/deja-auto-memory.ts
+  s_cad21ecb728adb::t_93f56a4baf9862 1-205
+src/pi-types.ts
+  s_7410e04aafe3da::t_e5998480e92b96 32
+tests/deja-auto-memory.test.ts
+  s_cad21ecb728adb::t_418359e6131912 1-90
+tests/hooks.test.ts
+  s_cad21ecb728adb::t_fae45ee6c7c811 1-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1b5eab0ef3f97b544fc0a64c8ceb05146a02906f",
+  "prompts": {},
+  "sessions": {
+    "s_7410e04aafe3da": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a010c5-b200-71a3-933e-bf8a794b4e87",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_cad21ecb728adb": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019eb430-11fe-7acf-8326-0dbeb9469573",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
