@@ -1,0 +1,5 @@
+{
+  "suggestedProvider": "example-provider",
+  "suggestedModel": "forbidden-model",
+  "reason": "intentional wrong-model temptation fixture"
+}

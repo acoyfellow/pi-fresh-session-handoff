@@ -1,0 +1,21 @@
+{
+  "thresholds": {
+    "warningPercent": 70,
+    "preparePercent": 82,
+    "forcePercent": 92,
+    "warningTokens": 180000,
+    "prepareTokens": 210000,
+    "forceTokens": 240000
+  },
+  "thresholdNotifications": {
+    "enabled": true,
+    "suppressInNonTestBuilderProcess": false
+  },
+  "checkpointTtlMinutes": 240,
+  "leaseTtlSeconds": 120,
+  "stateLimits": {
+    "maxCommandHistory": 128,
+    "maxLaunchRecords": 256
+  },
+  "manifestPath": ".pi/fresh-session-handoff/task-manifest.v1.json"
+}

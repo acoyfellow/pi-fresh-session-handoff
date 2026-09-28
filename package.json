@@ -1,0 +1,38 @@
+{
+  "name": "pi-fresh-session-handoff",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "check": "npm run build && npm run test && npm run gate -- --dry-run",
+    "gate": "node scripts/gate.mjs",
+    "benchmark:probe": "node scripts/benchmark-capability-probe.mjs",
+    "benchmark:drive": "node scripts/benchmark-live-driver.mjs",
+    "benchmark:runner": "node scripts/benchmark-runner.mjs",
+    "benchmark:live": "npm run benchmark:probe && npm run benchmark:drive && npm run benchmark:runner",
+    "install:extension": "node scripts/install-extension.mjs",
+    "fixture:create": "node fixtures/repeatable-project/create-fixture.mjs",
+    "fixture:test": "node fixtures/repeatable-project/run-test-command.mjs",
+    "fixture:proof": "node fixtures/repeatable-project/final-proof.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "description": "Pi extension: context-threshold hooks, Deja auto-memory, and safe fresh-session handoff.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acoyfellow/pi-fresh-session-handoff.git"
+  },
+  "keywords": [
+    "pi",
+    "pi-extension",
+    "context",
+    "handoff",
+    "memory",
+    "deja"
+  ]
+}

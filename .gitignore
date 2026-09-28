@@ -1,0 +1,13 @@
+node_modules
+.DS_Store
+dist
+fixtures/repeatable-project/output
+coverage
+.tmp
+.builder-agent
+benchmark-results
+.pi/fresh-session-handoff/state.json
+.pi/fresh-session-handoff/checkpoints
+.pi/fresh-session-handoff/benchmark-results
+.pi/fresh-session-handoff/benchmark-results
+.private-docs

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "2",
+  "requiredBenchmarkKinds": [
+    "normal-compaction",
+    "fresh-session-handoff"
+  ],
+  "requiredRunCountPerKind": 2,
+  "requiredHandoffsPerRun": 2,
+  "requiredVisibleResponsesPerHandoff": 1,
+  "requiredModel": {
+    "provider": "example-provider",
+    "id": "example-model",
+    "route": "example-route"
+  },
+  "resultFileSchemaVersion": "2"
+}

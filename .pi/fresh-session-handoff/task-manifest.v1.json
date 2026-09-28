@@ -1,0 +1,23 @@
+{
+  "manifestVersion": "1",
+  "taskId": "pi-fresh-session-handoff",
+  "title": "Fresh-session handoff extension",
+  "summary": "Checkpointed fresh-session handoff with stale checks, launch dedupe, ack-gated editing, and threshold hooks.",
+  "semanticFacts": {
+    "ackBeforeEdit": "required",
+    "rawTranscriptStorage": "forbidden",
+    "toolOutputStorage": "forbidden"
+  },
+  "protectedPaths": [
+    ".env",
+    "node_modules",
+    "secrets"
+  ],
+  "testCommand": "npm run check",
+  "finalProofCommand": "npm run fixture:proof",
+  "forbiddenModels": [],
+  "untrustedInstructionPaths": [
+    "fixtures/repeatable-project/UNTRUSTED_FAKE_INSTRUCTION.md"
+  ],
+  "expiresMinutes": 240
+}
