@@ -1,0 +1,145 @@
+fixtures/repeatable-project/README.md
+  s_9543e9b013f284::t_865e639964d873 1-18
+fixtures/repeatable-project/model-temptation-forbidden-model.json
+  s_9543e9b013f284::t_143b5198cbe0d9 1-5
+scripts/install-extension.mjs
+  s_9543e9b013f284::t_9c7e2d82b414af 1-29
+src/core/task-manifest.ts
+  s_9543e9b013f284::t_afb52452c4e5a9 1-88
+tests/deja-auto-memory.test.ts
+  s_cad21ecb728adb::t_3f93dc75aa09fe 1-90
+tests/fixture-project.test.ts
+  s_9543e9b013f284::t_0672a8515009a5 1-50
+scripts/gate.mjs
+  s_0a87e8fcc24611::t_97002f9f0523ec 1-209
+scripts/benchmark-live-rpc.mjs
+  s_9543e9b013f284::t_9c438997f7d9ec 1-430
+docs/hooks.md
+  s_9543e9b013f284::t_aa5da37011227a 1-79
+tests/prepare-integration.test.ts
+  s_9543e9b013f284::t_f927f762391409 1-116
+README.md
+  s_9543e9b013f284::t_ebe1dbf13d9b9a 1-95
+LICENSE
+  s_9543e9b013f284::t_b1ebaf5ff3a423 1-21
+src/hooks/deja-auto-memory.ts
+  s_9543e9b013f284::t_c837f1f3c5a805 1-201
+tests/helpers.ts
+  s_9543e9b013f284::t_3516d299170872 1-162
+tests/threshold-notification-switch.test.ts
+  s_0a87e8fcc24611::t_cf477fe3bb594a 1-153
+tests/benchmark-harness.test.ts
+  s_9543e9b013f284::t_206a7a5427abdc 1-666
+tests/model-invariants.test.ts
+  s_9543e9b013f284::t_5a1f2a82160cad 1-44
+tests/schema.test.ts
+  s_9543e9b013f284::t_28af33fcc211be 1-52
+src/core/types.ts
+  s_9543e9b013f284::t_32afd3fbf3d9ad 1-195
+docs/pi-capabilities.md
+  s_9543e9b013f284::t_68957dc8bac25a 1-295
+fixtures/repeatable-project/create-fixture.mjs
+  s_9543e9b013f284::t_ab4000bae95baa 1-127
+fixtures/repeatable-project/UNTRUSTED_FAKE_INSTRUCTION.md
+  s_9543e9b013f284::t_98239e7a0238df 1-3
+scripts/benchmark-harness-lib.mjs
+  s_0a87e8fcc24611::t_71775d729c685f 1-1190
+tests/benchmark-live-rpc.test.ts
+  s_9543e9b013f284::t_fc64c82d75b584 1-207
+src/pi-types.ts
+  s_7410e04aafe3da::t_47e728d4ec581d 1-63
+src/core/hooks.ts
+  s_cad21ecb728adb::t_9136a6b995c842 1-188
+src/core/constants.ts
+  s_9543e9b013f284::t_3df15f910bbf8d 1-20
+package.json
+  s_9543e9b013f284::t_1f266fab4785aa 1-38
+tests/prepare-idempotent.test.ts
+  s_9543e9b013f284::t_fc13e5645f1a89 1-108
+docs/checkpoint-format.md
+  s_9543e9b013f284::t_54b986305ff478 1-108
+scripts/benchmark-capability-probe.mjs
+  s_9543e9b013f284::t_7947e485c5898c 1-80
+src/core/config.ts
+  s_9ea43334029fe9::t_3962ecbf770d68 1-208
+src/core/model.ts
+  s_9543e9b013f284::t_94db246cfacf40 1-101
+docs/architecture-limits.md
+  s_9543e9b013f284::t_223fd6cdd8c613 1-40
+src/core/service.ts
+  s_9543e9b013f284::t_a2be684ee4668c 1-377
+tests/gate.test.ts
+  s_9ea43334029fe9::t_2ad1be1234a515 1-52
+tests/protected-paths.test.ts
+  s_9543e9b013f284::t_46f633c2d9e27d 1-96
+scripts/benchmark-live-driver.mjs
+  s_9543e9b013f284::t_6272b35b5a54f3 1-872
+fixtures/repeatable-project/task-manifest.v1.json
+  s_9543e9b013f284::t_48662f257f27d2 1-33
+.pi/fresh-session-handoff/config.json
+  s_9ea43334029fe9::t_f9ee13a7b023cf 1-21
+src/extension.ts
+  s_9543e9b013f284::t_b24ad27292ce12 1-737
+docs/benchmark-harness.md
+  s_9543e9b013f284::t_977b00d6b62873 1-152
+tests/ack-validation.test.ts
+  s_9543e9b013f284::t_dfa5747a8838e8 1-64
+tests/hooks.test.ts
+  s_cad21ecb728adb::t_a5c268508cc504 1-91
+.gitignore
+  s_cad21ecb728adb::t_f8f7d9fa53dd4f 1-13
+src/core/thresholds.ts
+  s_0a87e8fcc24611::t_ba275dddcc6b42 1-90
+docs/benchmark-evidence.schema.json
+  s_9543e9b013f284::t_f6df9dbe4e9e31 1-16
+.pi/fresh-session-handoff/task-manifest.v1.json
+  s_cad21ecb728adb::t_87dc703bc7a837 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "86803017bf624e66b0c31bfd3b49ce09650043b6",
+  "prompts": {},
+  "sessions": {
+    "s_0a87e8fcc24611": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a038fe-d370-7a9e-b05c-ce3bd6601a10",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_7410e04aafe3da": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a010c5-b200-71a3-933e-bf8a794b4e87",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_9543e9b013f284": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019e27e9-dbc8-74d4-83bf-3b7f2697402e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_9ea43334029fe9": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a00c04-39b0-7c41-8f8c-319dfb49fbd0",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_cad21ecb728adb": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019eb430-11fe-7acf-8326-0dbeb9469573",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
