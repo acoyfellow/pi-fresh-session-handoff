@@ -1,0 +1,95 @@
+.gitignore
+  s_cad21ecb728adb::t_7d0277e8247af1 12-14
+LICENSE
+  s_9543e9b013f284::t_ad5fe2bc898681 1-21
+README.md
+  s_9543e9b013f284::t_3449481d78297c 1,3,5,7-9,14-15,20,22,24,26-32,35-48,50-54,56,58,60-63,65-83,87-95
+docs/architecture-limits.md
+  s_9543e9b013f284::t_a6b8ebd77a9bc4 33
+docs/benchmark-evidence.schema.json
+  s_9543e9b013f284::t_7c40b67dfd4b4e 11-13
+docs/benchmark-harness.md
+  s_9543e9b013f284::t_3f55cf12bb6883 9,96
+docs/checkpoint-format.md
+  s_9543e9b013f284::t_5de1db3c45eeb8 94-96
+docs/hooks.md
+  s_9543e9b013f284::t_ce889348140b52 77
+docs/pi-capabilities.md
+  s_9543e9b013f284::t_541f254e0ad13f 239,283
+fixtures/repeatable-project/README.md
+  s_9543e9b013f284::t_75804fd64c2d2c 9
+fixtures/repeatable-project/UNTRUSTED_FAKE_INSTRUCTION.md
+  s_9543e9b013f284::t_5894e7db8aff8b 2
+fixtures/repeatable-project/create-fixture.mjs
+  s_9543e9b013f284::t_3535e7370403e7 34,38,67-68,87,92
+fixtures/repeatable-project/model-temptation-forbidden-model.json
+  s_9543e9b013f284::t_84837adbbdb58e 2-3
+fixtures/repeatable-project/task-manifest.v1.json
+  s_9543e9b013f284::t_929ead151f7104 7-9,15,26-27
+package.json
+  s_9543e9b013f284::t_fada99321c0c37 23-37
+scripts/benchmark-capability-probe.mjs
+  s_9543e9b013f284::t_b922acea29029c 13-14
+scripts/benchmark-live-driver.mjs
+  s_9543e9b013f284::t_cfc08c841da547 2,13,164-165
+scripts/benchmark-live-rpc.mjs
+  s_9543e9b013f284::t_94aac2f08c092a 5-7
+scripts/install-extension.mjs
+  s_9543e9b013f284::t_381b65ceb1a027 2,7
+src/core/model.ts
+  s_9543e9b013f284::t_3c799b4d476c05 1,57-65,70,72-75,78-79,81-82,84-85,93-94
+src/core/service.ts
+  s_9543e9b013f284::t_512a7334a0bc7c 39,65-69,71,196-201
+src/core/task-manifest.ts
+  s_9543e9b013f284::t_bbd32fd1654a7e 4,33-49,61,74
+src/core/types.ts
+  s_9543e9b013f284::t_490e1bf8c3bca9 48-53,59
+src/extension.ts
+  s_9543e9b013f284::t_f269c8ae91f9e2 6,55,57,63-73,126,169,217,351
+src/hooks/deja-auto-memory.ts
+  s_9543e9b013f284::t_bf663e404c6c44 30
+tests/ack-validation.test.ts
+  s_9543e9b013f284::t_637badd98f2dc4 38,45
+tests/benchmark-harness.test.ts
+  s_9543e9b013f284::t_ab321a74c51f9b 19-21
+tests/benchmark-live-rpc.test.ts
+  s_9543e9b013f284::t_81ba0f24a72b8b 71,73,138-139
+tests/fixture-project.test.ts
+  s_9543e9b013f284::t_af84917c9e8bb2 35,38
+tests/helpers.ts
+  s_9543e9b013f284::t_70c19150989fb9 25-27,35,43-46
+tests/model-invariants.test.ts
+  s_9543e9b013f284::t_7fb49bacfb4fb2 4-6,9-12,14-16,21-23,25,29-30,34-43
+tests/prepare-idempotent.test.ts
+  s_9543e9b013f284::t_b83ae745ccff06 29-31,39,66-68,70-71,88-90,92-93
+tests/prepare-integration.test.ts
+  s_9543e9b013f284::t_13e3f85e905aed 30-32,40,94-96,98-99
+tests/protected-paths.test.ts
+  s_9543e9b013f284::t_0395a68f71958c 41-43,49,80-82,85,87
+tests/schema.test.ts
+  s_9543e9b013f284::t_961c65c9e8a7af 19-20,31-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "aaad45e1c5747ccecc2f864e176cd9494deab542",
+  "prompts": {},
+  "sessions": {
+    "s_9543e9b013f284": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019e27e9-dbc8-74d4-83bf-3b7f2697402e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    },
+    "s_cad21ecb728adb": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019eb430-11fe-7acf-8326-0dbeb9469573",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
