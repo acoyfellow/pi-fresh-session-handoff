@@ -24,6 +24,12 @@ export interface DejaAutoMemoryOptions {
 export interface DejaClient {
   recall(query: string, cwd: string, sessionId: string, signal: AbortSignal): Promise<string>;
   remember(candidate: MemoryCandidate, cwd: string, sessionId: string, signal: AbortSignal): Promise<string>;
+  keep(ids: string[], cwd: string, sessionId: string, signal: AbortSignal): Promise<string>;
+}
+
+export interface NoveltyVerdict {
+  novel: number[];
+  repeatedDraftIds: string[];
 }
 
 function defaultDejaCommand(): string[] {
@@ -91,7 +97,11 @@ export function noveltyPrompt(candidates: MemoryCandidate[], recalled: string[])
     "shown with it. A candidate is NOT new if an existing memory states the same thing, even in different words.",
     "A candidate IS new if it adds a meaningful detail, or updates or contradicts an existing memory.",
     "",
-    'Respond with only JSON: {"new":[0,2]} listing the indexes of new candidates.',
+    "Existing memories start with a line like `[low] <ID>  draft ...` or `[medium] <ID>  kept ...`.",
+    "When a candidate is NOT new and the memory it repeats is a draft, report that draft's ID: a fact that",
+    "comes up again has proven durable and should be kept.",
+    "",
+    'Respond with only JSON: {"new":[0,2],"repeatedDrafts":["<ID>"]}.',
     "",
     ...sections,
   ].join("\n");
@@ -128,11 +138,21 @@ export function parseCandidates(text: string, maxCandidates: number): MemoryCand
   return candidates;
 }
 
-export function parseNovelIndexes(text: string, candidateCount: number): number[] {
-  const parsed = firstJsonObject(text) as { new?: unknown } | undefined;
-  if (!parsed || !Array.isArray(parsed.new)) return [];
-  const indexes = parsed.new.filter((value): value is number => Number.isInteger(value) && value >= 0 && value < candidateCount);
-  return [...new Set(indexes)].sort((a, b) => a - b);
+export function draftIdsIn(recalledText: string): Set<string> {
+  const ids = new Set<string>();
+  for (const match of recalledText.matchAll(/^\[[a-z]+\]\s+([0-9A-Z]{26})\s+draft\b/gm)) ids.add(match[1]);
+  return ids;
+}
+
+export function parseNoveltyVerdict(text: string, candidateCount: number, recalledDraftIds: Set<string>): NoveltyVerdict {
+  const parsed = firstJsonObject(text) as { new?: unknown; repeatedDrafts?: unknown } | undefined;
+  const indexes = Array.isArray(parsed?.new)
+    ? parsed.new.filter((value): value is number => Number.isInteger(value) && value >= 0 && value < candidateCount)
+    : [];
+  const repeated = Array.isArray(parsed?.repeatedDrafts)
+    ? parsed.repeatedDrafts.filter((value): value is string => typeof value === "string" && recalledDraftIds.has(value))
+    : [];
+  return { novel: [...new Set(indexes)].sort((a, b) => a - b), repeatedDraftIds: [...new Set(repeated)] };
 }
 
 export function cliDejaClient(options: Pick<DejaAutoMemoryOptions, "dejaCommand" | "author">): DejaClient {
@@ -150,6 +170,7 @@ export function cliDejaClient(options: Pick<DejaAutoMemoryOptions, "dejaCommand"
   return {
     recall: (query, cwd, sessionId, signal) => run(["recall", query, "--tokens=600"], cwd, sessionId, signal),
     remember: (candidate, cwd, sessionId, signal) => run(["remember", candidate.text, `--kind=${candidate.kind}`], cwd, sessionId, signal),
+    keep: (ids, cwd, sessionId, signal) => run(["keep", ...ids], cwd, sessionId, signal),
   };
 }
 
@@ -157,6 +178,7 @@ export interface AutoMemoryReport {
   candidates: number;
   saved: MemoryCandidate[];
   known: number;
+  promoted: string[];
 }
 
 export async function runAutoMemory(
@@ -166,22 +188,30 @@ export async function runAutoMemory(
   deja: DejaClient,
 ): Promise<AutoMemoryReport> {
   const conversationText = recentConversationText(event.conversation, options.maxConversationChars);
-  if (!conversationText.trim()) return { candidates: 0, saved: [], known: 0 };
+  if (!conversationText.trim()) return { candidates: 0, saved: [], known: 0, promoted: [] };
 
   const candidates = parseCandidates(await tools.completeWithCurrentModel(extractionPrompt(conversationText, options.maxCandidates)), options.maxCandidates);
-  if (candidates.length === 0) return { candidates: 0, saved: [], known: 0 };
+  if (candidates.length === 0) return { candidates: 0, saved: [], known: 0, promoted: [] };
 
   const recalled: string[] = [];
   for (const candidate of candidates) recalled.push(await deja.recall(candidate.text, event.cwd, event.sessionId, tools.signal));
 
-  const novel = parseNovelIndexes(await tools.completeWithCurrentModel(noveltyPrompt(candidates, recalled)), candidates.length);
+  const recalledDraftIds = new Set(recalled.flatMap((text) => [...draftIdsIn(text)]));
+  const verdict = parseNoveltyVerdict(
+    await tools.completeWithCurrentModel(noveltyPrompt(candidates, recalled)),
+    candidates.length,
+    recalledDraftIds,
+  );
   const saved: MemoryCandidate[] = [];
-  for (const index of novel) {
+  for (const index of verdict.novel) {
     if (tools.signal.aborted) break;
     await deja.remember(candidates[index], event.cwd, event.sessionId, tools.signal);
     saved.push(candidates[index]);
   }
-  return { candidates: candidates.length, saved, known: candidates.length - novel.length };
+  if (verdict.repeatedDraftIds.length > 0 && !tools.signal.aborted) {
+    await deja.keep(verdict.repeatedDraftIds, event.cwd, event.sessionId, tools.signal);
+  }
+  return { candidates: candidates.length, saved, known: candidates.length - verdict.novel.length, promoted: verdict.repeatedDraftIds };
 }
 
 export function createDejaAutoMemoryHook(rawOptions: Record<string, unknown>, deja?: DejaClient): ThresholdHook {
@@ -193,7 +223,8 @@ export function createDejaAutoMemoryHook(rawOptions: Record<string, unknown>, de
     async run(event, tools) {
       const report = await runAutoMemory(event, tools, options, client);
       if (report.candidates === 0) return;
-      tools.notify(`auto-memory (${event.stage}): ${report.saved.length} new saved to Deja as drafts, ${report.known} already known`, "info");
+      const promoted = report.promoted.length > 0 ? `, ${report.promoted.length} repeated drafts kept` : "";
+      tools.notify(`auto-memory (${event.stage}): ${report.saved.length} new saved to Deja as drafts, ${report.known} already known${promoted}`, "info");
     },
   };
 }

@@ -65,6 +65,7 @@ Keeps Deja current as a session grows:
 2. Recalls each candidate from Deja in the session's repository scope.
 3. Asks the current model which candidates add information not already in Deja.
 4. Saves only those as Deja **drafts** with author `pi/auto-memory`. Drafts that are never kept or used expire after 24 hours.
+5. When a candidate repeats an existing **draft**, keeps that draft. A fact that comes up again in a later pass has proven durable, so it survives expiry instead of being saved twice. This needs a Deja CLI with the `keep` command.
 
 Options:
 

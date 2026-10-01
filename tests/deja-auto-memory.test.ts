@@ -4,7 +4,8 @@ import type { ThresholdHookEvent, ThresholdHookTools } from "../src/core/hooks.j
 import {
   createDejaAutoMemoryHook,
   parseCandidates,
-  parseNovelIndexes,
+  parseNoveltyVerdict,
+  draftIdsIn,
   recentConversationText,
   resolveOptions,
   type DejaClient,
@@ -17,15 +18,23 @@ function event(conversation: ThresholdHookEvent["conversation"]): ThresholdHookE
 
 function fakeDeja(existing: Record<string, string>) {
   const saved: MemoryCandidate[] = [];
+  const kept: string[] = [];
   const client: DejaClient = {
     recall: async (query) => existing[query] ?? "",
     remember: async (candidate) => {
       saved.push(candidate);
       return "drafted";
     },
+    keep: async (ids) => {
+      kept.push(...ids);
+      return "kept";
+    },
   };
-  return { client, saved };
+  return { client, saved, kept };
 }
+
+const DRAFT_ID = "01M3QBDX8E22QA67HY57Z62B6Z";
+const KEPT_ID = "01M0EEHV76D2CDHW88T2FATPFH";
 
 describe("deja auto-memory hook", () => {
   it("parses candidate JSON defensively and dedupes", () => {
@@ -35,7 +44,7 @@ describe("deja auto-memory hook", () => {
       { text: "Deploys go through wrangler.", kind: "fact" },
     ]);
     expect(parseCandidates("no json", 8)).toEqual([]);
-    expect(parseNovelIndexes('{"new":[2,0,0,9,"1"]}', 3)).toEqual([0, 2]);
+    expect(parseNoveltyVerdict('{"new":[2,0,0,9,"1"]}', 3, new Set()).novel).toEqual([0, 2]);
   });
 
   it("keeps the most recent conversation within the character budget", () => {
@@ -68,6 +77,32 @@ describe("deja auto-memory hook", () => {
     expect(prompts[1]).toContain("(no matches)");
     expect(saved).toEqual([{ text: "The API rate limit is 50 requests per second.", kind: "fact" }]);
     expect(notices).toEqual(["auto-memory (prepare): 1 new saved to Deja as drafts, 1 already known"]);
+  });
+
+  it("keeps a draft that a later pass finds again", async () => {
+    const recalled = `[low] ${DRAFT_ID}  draft    2026-09-29T19:49:22  pi/auto-memory\n  scope: cwd:x\n  WARP blocks uploads.\n\n[medium] ${KEPT_ID}  kept     2026-08-20T02:03:42  pi\n  something else`;
+    const responses = [
+      JSON.stringify({ memories: [{ text: "WARP blocks uploads to oaiusercontent.com.", kind: "pitfall" }] }),
+      JSON.stringify({ new: [], repeatedDrafts: [DRAFT_ID, KEPT_ID, "01NOTRECALLEDXXXXXXXXXXXXX"] }),
+    ];
+    const notices: string[] = [];
+    const tools: ThresholdHookTools = {
+      completeWithCurrentModel: async () => responses.shift() ?? "",
+      notify: (message) => notices.push(message),
+      signal: new AbortController().signal,
+    };
+    const { client, saved, kept } = fakeDeja({ "WARP blocks uploads to oaiusercontent.com.": recalled });
+
+    await createDejaAutoMemoryHook({}, client).run(event([{ role: "user", text: "warp again" }]), tools);
+
+    expect(saved).toEqual([]);
+    expect(kept).toEqual([DRAFT_ID]);
+    expect(notices).toEqual(["auto-memory (prepare): 0 new saved to Deja as drafts, 1 already known, 1 repeated drafts kept"]);
+  });
+
+  it("finds draft ids only on draft hit lines", () => {
+    const text = `[low] ${DRAFT_ID}  draft    2026\n  mentions ${KEPT_ID} draft in text\n[medium] ${KEPT_ID}  kept     2026`;
+    expect([...draftIdsIn(text)]).toEqual([DRAFT_ID]);
   });
 
   it("does nothing for empty conversations or no candidates", async () => {

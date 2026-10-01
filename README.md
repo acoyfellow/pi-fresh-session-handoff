@@ -42,6 +42,7 @@ A hook is a module that exports `{ name, stages?, run(event, tools) }`, or a fac
 2. Each candidate is recalled from Deja in the repository's scope.
 3. The model keeps only candidates Deja does not already have.
 4. New ones are saved as Deja drafts, which expire after 24 hours unless kept or used.
+5. A draft that a later pass finds again is kept, so repeated facts last instead of piling up.
 
 It requires the `deja` CLI on `PATH`, or set `options.dejaCommand`, for example `["bun", "/path/to/deja/src/cli.ts"]`.
 
