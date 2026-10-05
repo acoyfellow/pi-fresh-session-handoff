@@ -6,6 +6,10 @@ import {
   parseCandidates,
   parseNoveltyVerdict,
   draftIdsIn,
+  containsPersonalData,
+  keptIdsIn,
+  extractionPrompt,
+  cliDejaClient,
   recentConversationText,
   resolveOptions,
   type DejaClient,
@@ -27,7 +31,7 @@ function fakeDeja(existing: Record<string, string>) {
     },
     keep: async (ids) => {
       kept.push(...ids);
-      return "kept";
+      return ids.map((id) => `kept ${id}`).join("\n");
     },
   };
   return { client, saved, kept };
@@ -121,5 +125,48 @@ describe("deja auto-memory hook", () => {
     const options = resolveOptions({ stages: ["force", "bogus"], maxCandidates: 3, dejaCommand: ["deja"] });
     expect(options).toMatchObject({ stages: ["force"], maxCandidates: 3, dejaCommand: ["deja"], author: "pi/auto-memory" });
     expect(resolveOptions({}).stages).toEqual(["warning", "prepare", "force"]);
+  });
+});
+
+
+describe("auto-memory privacy and session rules", () => {
+  it("drops candidates that carry personal identifiers but keeps engineering facts", () => {
+    expect(containsPersonalData("Ticket deletion for user ID `0123456789abcdef0123456789abcdef`")).toBe(true);
+    expect(containsPersonalData("Customer jane.doe@example.com asked for deletion")).toBe(true);
+    expect(containsPersonalData("account 555000111 has four chats")).toBe(true);
+    expect(containsPersonalData("Pin cf 1.0.0-beta.7; released 2026-10-02 in workerd 1.20260801.1")).toBe(false);
+    expect(containsPersonalData("Deletion must also clear conversation-linked tables and user-level records.")).toBe(false);
+
+    const parsed = parseCandidates(
+      JSON.stringify({ memories: [
+        { text: "Privacy request for user ID 0123456789abcdef0123456789abcdef covers four chats.", kind: "fact" },
+        { text: "Privacy deletion must also clear conversation-linked tables.", kind: "pitfall" },
+      ] }),
+      8,
+    );
+    expect(parsed).toEqual([{ text: "Privacy deletion must also clear conversation-linked tables.", kind: "pitfall" }]);
+  });
+
+  it("tells the model never to store third-party personal data", () => {
+    expect(extractionPrompt("x", 3)).toContain("Never record personal data about customers");
+  });
+
+  it("CLI client recalls without traces and keeps only drafts from another session", async () => {
+    const calls: string[][] = [];
+    const { execFile } = await import("node:child_process");
+    expect(typeof execFile).toBe("function");
+    const client = cliDejaClient({ dejaCommand: ["node", "-e", "console.log(JSON.stringify(process.argv.slice(1)))"], author: "pi/auto-memory" });
+    const signal = new AbortController().signal;
+    calls.push(JSON.parse(await client.recall("q", process.cwd(), "s", signal)));
+    calls.push(JSON.parse(await client.keep(["01ABC"], process.cwd(), "s", signal)));
+    expect(calls[0]).toEqual(["recall", "q", "--tokens=600", "--no-trace"]);
+    expect(calls[1]).toEqual(["keep", "01ABC", "--from-other-session"]);
+  });
+});
+
+describe("keep output parsing", () => {
+  it("counts only ids Deja actually kept", () => {
+    const output = "kept 01M3QBDX8E22QA67HY57Z62B6Z\nunchanged (same session) 01M0EEHV76D2CDHW88T2FATPFH\nunchanged 01M3RQVBDQ2685CABHYDQ8YTNN";
+    expect(keptIdsIn(output)).toEqual(["01M3QBDX8E22QA67HY57Z62B6Z"]);
   });
 });

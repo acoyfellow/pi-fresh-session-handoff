@@ -76,6 +76,9 @@ export function extractionPrompt(conversationText: string, maxCandidates: number
     "Keep only durable knowledge: decisions and their reasons, user preferences, pitfalls/gotchas, stable facts",
     "about the codebase or environment, and reusable procedures. Skip transient progress, chit-chat, secrets,",
     "credentials, tokens, and anything that is only true for this moment.",
+    "Never record personal data about customers, end users, or other third parties: no names tied to",
+    "requests or tickets, user or account IDs, email addresses, phone numbers, or the content of their",
+    "conversations. Describe the engineering lesson without identifying anyone.",
     "",
     "Each memory must be one self-contained sentence or two, understandable without this conversation.",
     `kind must be one of: ${MEMORY_KINDS.join(", ")}.`,
@@ -118,6 +121,17 @@ function firstJsonObject(text: string): unknown {
   }
 }
 
+const PERSONAL_DATA_PATTERNS: RegExp[] = [
+  /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i,
+  /\b[0-9a-f]{32}\b/i,
+  /\baccount\s*(id\s*)?[:#]?\s*\d{6,}\b/i,
+  /\buser\s*id\s*[:#]?\s*`?[0-9a-z-]{8,}/i,
+];
+
+export function containsPersonalData(text: string): boolean {
+  return PERSONAL_DATA_PATTERNS.some((pattern) => pattern.test(text));
+}
+
 export function parseCandidates(text: string, maxCandidates: number): MemoryCandidate[] {
   const parsed = firstJsonObject(text) as { memories?: unknown } | undefined;
   if (!parsed || !Array.isArray(parsed.memories)) return [];
@@ -128,6 +142,7 @@ export function parseCandidates(text: string, maxCandidates: number): MemoryCand
     const record = item as Record<string, unknown>;
     const memoryText = typeof record.text === "string" ? record.text.trim().replace(/\s+/g, " ") : "";
     if (memoryText.length < 12) continue;
+    if (containsPersonalData(memoryText)) continue;
     const key = memoryText.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -136,6 +151,10 @@ export function parseCandidates(text: string, maxCandidates: number): MemoryCand
     if (candidates.length >= maxCandidates) break;
   }
   return candidates;
+}
+
+export function keptIdsIn(keepOutput: string): string[] {
+  return [...keepOutput.matchAll(/^kept\s+([0-9A-Z]{26})\s*$/gm)].map((match) => match[1]);
 }
 
 export function draftIdsIn(recalledText: string): Set<string> {
@@ -168,9 +187,9 @@ export function cliDejaClient(options: Pick<DejaAutoMemoryOptions, "dejaCommand"
     return stdout;
   };
   return {
-    recall: (query, cwd, sessionId, signal) => run(["recall", query, "--tokens=600"], cwd, sessionId, signal),
+    recall: (query, cwd, sessionId, signal) => run(["recall", query, "--tokens=600", "--no-trace"], cwd, sessionId, signal),
     remember: (candidate, cwd, sessionId, signal) => run(["remember", candidate.text, `--kind=${candidate.kind}`], cwd, sessionId, signal),
-    keep: (ids, cwd, sessionId, signal) => run(["keep", ...ids], cwd, sessionId, signal),
+    keep: (ids, cwd, sessionId, signal) => run(["keep", ...ids, "--from-other-session"], cwd, sessionId, signal),
   };
 }
 
@@ -208,10 +227,11 @@ export async function runAutoMemory(
     await deja.remember(candidates[index], event.cwd, event.sessionId, tools.signal);
     saved.push(candidates[index]);
   }
-  if (verdict.repeatedDraftIds.length > 0 && !tools.signal.aborted) {
-    await deja.keep(verdict.repeatedDraftIds, event.cwd, event.sessionId, tools.signal);
-  }
-  return { candidates: candidates.length, saved, known: candidates.length - verdict.novel.length, promoted: verdict.repeatedDraftIds };
+  const promoted =
+    verdict.repeatedDraftIds.length > 0 && !tools.signal.aborted
+      ? keptIdsIn(await deja.keep(verdict.repeatedDraftIds, event.cwd, event.sessionId, tools.signal))
+      : [];
+  return { candidates: candidates.length, saved, known: candidates.length - verdict.novel.length, promoted };
 }
 
 export function createDejaAutoMemoryHook(rawOptions: Record<string, unknown>, deja?: DejaClient): ThresholdHook {

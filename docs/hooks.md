@@ -65,7 +65,9 @@ Keeps Deja current as a session grows:
 2. Recalls each candidate from Deja in the session's repository scope.
 3. Asks the current model which candidates add information not already in Deja.
 4. Saves only those as Deja **drafts** with author `pi/auto-memory`. Drafts that are never kept or used expire after 24 hours.
-5. When a candidate repeats an existing **draft**, keeps that draft. A fact that comes up again in a later pass has proven durable, so it survives expiry instead of being saved twice. This needs a Deja CLI with the `keep` command.
+5. When a candidate repeats a **draft that a different session wrote**, keeps that draft. A fact that comes up again in another session has proven durable, so it survives expiry instead of being saved twice. Repeats within one session are not enough. This needs a Deja CLI with `keep --from-other-session`.
+6. Never records personal data about customers or other third parties. The prompt forbids it, and candidates containing emails, 32-character hex IDs, account numbers or user IDs are dropped.
+7. Its own duplicate-check lookups use `recall --no-trace`, so they are not counted as agent recalls.
 
 Options:
 
