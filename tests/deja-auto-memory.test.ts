@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join } from "node:path";
 
 import type { ThresholdHookEvent, ThresholdHookTools } from "../src/core/hooks.js";
 import {
@@ -134,6 +137,10 @@ describe("auto-memory privacy and session rules", () => {
     expect(containsPersonalData("Ticket deletion for user ID `0123456789abcdef0123456789abcdef`")).toBe(true);
     expect(containsPersonalData("Customer jane.doe@example.com asked for deletion")).toBe(true);
     expect(containsPersonalData("account 555000111 has four chats")).toBe(true);
+    expect(containsPersonalData("set customer_id=abc123 before replaying")).toBe(true);
+    expect(containsPersonalData("ticket for 123e4567-e89b-12d3-a456-426614174000")).toBe(true);
+    expect(containsPersonalData("call them on +1 415 555 0134")).toBe(true);
+    expect(containsPersonalData("Pi 0.84.4 shipped on 2026-10-05 with wrangler 4.12.0")).toBe(false);
     expect(containsPersonalData("Pin cf 1.0.0-beta.7; released 2026-10-02 in workerd 1.20260801.1")).toBe(false);
     expect(containsPersonalData("Deletion must also clear conversation-linked tables and user-level records.")).toBe(false);
 
@@ -153,8 +160,6 @@ describe("auto-memory privacy and session rules", () => {
 
   it("CLI client recalls without traces and keeps only drafts from another session", async () => {
     const calls: string[][] = [];
-    const { execFile } = await import("node:child_process");
-    expect(typeof execFile).toBe("function");
     const client = cliDejaClient({ dejaCommand: ["node", "-e", "console.log(JSON.stringify(process.argv.slice(1)))"], author: "pi/auto-memory" });
     const signal = new AbortController().signal;
     calls.push(JSON.parse(await client.recall("q", process.cwd(), "s", signal)));
@@ -169,4 +174,25 @@ describe("keep output parsing", () => {
     const output = "kept 01M3QBDX8E22QA67HY57Z62B6Z\nunchanged (same session) 01M0EEHV76D2CDHW88T2FATPFH\nunchanged 01M3RQVBDQ2685CABHYDQ8YTNN";
     expect(keptIdsIn(output)).toEqual(["01M3QBDX8E22QA67HY57Z62B6Z"]);
   });
+});
+
+describe("against the real deja CLI", () => {
+  const dejaCli = process.env.DEJA_CLI ?? join(homedir(), "cloudflare", "deja", "src", "cli.ts");
+  it.skipIf(!existsSync(dejaCli))("keeps a draft only when another session finds it again", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "fsh-deja-"));
+    const previousDb = process.env.DEJA_DB;
+    process.env.DEJA_DB = join(dir, "deja.db");
+    try {
+      const client = cliDejaClient({ dejaCommand: ["bun", dejaCli], author: "pi/auto-memory" });
+      const signal = new AbortController().signal;
+      const saved = await client.remember({ text: "real-cli probe: staging needs --env staging", kind: "procedure" }, dir, "session-a", signal);
+      const id = saved.match(/[0-9A-Z]{26}/)![0];
+      expect(keptIdsIn(await client.keep([id], dir, "session-a", signal))).toEqual([]);
+      expect(keptIdsIn(await client.keep([id], dir, "session-b", signal))).toEqual([id]);
+    } finally {
+      if (previousDb === undefined) delete process.env.DEJA_DB;
+      else process.env.DEJA_DB = previousDb;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

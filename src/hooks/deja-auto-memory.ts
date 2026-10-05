@@ -126,6 +126,9 @@ const PERSONAL_DATA_PATTERNS: RegExp[] = [
   /\b[0-9a-f]{32}\b/i,
   /\baccount\s*(id\s*)?[:#]?\s*\d{6,}\b/i,
   /\buser\s*id\s*[:#]?\s*`?[0-9a-z-]{8,}/i,
+  /\b(?:customer|account|user)_?id\s*[=:]\s*\S{4,}/i,
+  /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/i,
+  /\+\d{1,3}[\s.-]?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}\b/,
 ];
 
 export function containsPersonalData(text: string): boolean {
