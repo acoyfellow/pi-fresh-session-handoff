@@ -46,7 +46,7 @@ export function resolveOptions(raw: Record<string, unknown>): DejaAutoMemoryOpti
   return {
     dejaCommand: command,
     stages: stages.length > 0 ? stages : ["warning", "prepare", "force"],
-    maxCandidates: typeof raw.maxCandidates === "number" && raw.maxCandidates > 0 ? Math.floor(raw.maxCandidates) : 8,
+    maxCandidates: typeof raw.maxCandidates === "number" && raw.maxCandidates > 0 ? Math.floor(raw.maxCandidates) : 3,
     maxConversationChars: typeof raw.maxConversationChars === "number" && raw.maxConversationChars > 0 ? Math.floor(raw.maxConversationChars) : 60_000,
     author: typeof raw.author === "string" && raw.author.trim() ? raw.author.trim() : "pi/auto-memory",
   };
@@ -76,6 +76,8 @@ export function extractionPrompt(conversationText: string, maxCandidates: number
     "Keep only durable knowledge: decisions and their reasons, user preferences, pitfalls/gotchas, stable facts",
     "about the codebase or environment, and reusable procedures. Skip transient progress, chit-chat, secrets,",
     "credentials, tokens, and anything that is only true for this moment.",
+    "Bar for saving: would a different agent, starting fresh next week on a different task, make a mistake or",
+    "waste time without this? If not, leave it out. Fewer, sharper memories beat many. Returning none is normal.",
     "Never record personal data about customers, end users, or other third parties: no names tied to",
     "requests or tickets, user or account IDs, email addresses, phone numbers, or the content of their",
     "conversations. Describe the engineering lesson without identifying anyone.",

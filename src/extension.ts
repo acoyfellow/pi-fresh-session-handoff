@@ -37,6 +37,7 @@ import {
 } from "./core/hooks.js";
 import type { CheckpointCriticalFacts, TaskManifestV1, ThresholdStage } from "./core/types.js";
 import { dejaAutoMemoryFactory } from "./hooks/deja-auto-memory.js";
+import { buildPrimer, cliRecallRunner, primerOptionsFrom } from "./hooks/deja-session-primer.js";
 import { collectUntrustedInstructionData } from "./core/untrusted-instructions.js";
 import type { ExtensionApiLike, ExtensionCommandContextLike, ExtensionContextLike } from "./pi-types.js";
 
@@ -534,6 +535,8 @@ async function handleThresholdEvent(ctx: ExtensionContextLike): Promise<void> {
   }
 }
 
+const SESSION_PRIMER_MODULE = "deja-session-primer";
+
 const builtinHooks: Record<string, HookFactory> = {
   "deja-auto-memory": dejaAutoMemoryFactory,
 };
@@ -577,7 +580,7 @@ export async function runThresholdHooks(
   previousStage: ThresholdStage | undefined,
   usage: { tokens: number | null; percent: number | null },
 ): Promise<HookRunOutcome[]> {
-  const specs = await loadHookSpecs(ctx.cwd);
+  const specs = (await loadHookSpecs(ctx.cwd)).filter((spec) => spec.module !== SESSION_PRIMER_MODULE);
   if (specs.length === 0) return [];
   const event = {
     stage,
@@ -688,6 +691,24 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
       }
     } catch {
       return;
+    }
+  });
+
+  const primedSessions = new Set<string>();
+  pi.on("before_agent_start", async (event, ctx) => {
+    try {
+      const sessionId = ctx.sessionManager.getSessionId();
+      if (primedSessions.has(sessionId)) return undefined;
+      primedSessions.add(sessionId);
+      const spec = (await loadHookSpecs(ctx.cwd)).find((candidate) => candidate.module === SESSION_PRIMER_MODULE);
+      if (!spec) return undefined;
+      const options = primerOptionsFrom(spec.options);
+      const prompt = (event as { prompt?: unknown }).prompt;
+      const primer = await buildPrimer(typeof prompt === "string" ? prompt : "", ctx.cwd, sessionId, options, cliRecallRunner(options));
+      if (!primer) return undefined;
+      return { message: { customType: "deja-session-primer", content: primer, display: false } };
+    } catch {
+      return undefined;
     }
   });
 

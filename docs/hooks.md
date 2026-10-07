@@ -74,9 +74,29 @@ Options:
 | Option | Default |
 |---|---|
 | `stages` | `["warning", "prepare", "force"]` |
-| `maxCandidates` | `8` |
+| `maxCandidates` | `3` |
 | `maxConversationChars` | `60000` |
 | `author` | `pi/auto-memory` |
 | `dejaCommand` | `["deja"]`; set e.g. `["bun", "/path/to/deja/src/cli.ts"]` for a source checkout |
 
 Deja itself is unchanged: outside threshold transitions it is still only used on request.
+
+## Deja session primer
+
+Agents rarely decide to search memory on their own. The primer does it for them: on the first prompt of each session it runs `deja recall` with that prompt and, if anything matches, adds the hits to the model's context as a hidden message. Each hit shows where it was made. Nothing is added when there are no hits, and a slow or missing Deja never blocks the turn (4 second limit).
+
+Enable it in `~/.pi/agent/fresh-session-handoff/config.json`:
+
+```json
+{ "hooks": [{ "module": "deja-session-primer", "options": { "dejaCommand": ["deja"] } }] }
+```
+
+| Option | Default |
+| --- | --- |
+| `dejaCommand` | `["deja"]` |
+| `author` | `pi/session-primer` |
+| `maxTokens` | `600` |
+| `maxPromptChars` | `400` |
+| `timeoutMs` | `4000` |
+
+Primer lookups are recorded as recall receipts under `pi/session-primer`, so you can measure how often memory was put in front of an agent separately from searches agents chose to make.
