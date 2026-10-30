@@ -52,6 +52,7 @@ export interface ExtensionCommandContextLike extends ExtensionContextLike {
 }
 
 export interface ExtensionApiLike {
+  events?: { emit(channel: string, data: unknown): void };
   on(eventName: string, handler: (event: unknown, ctx: ExtensionContextLike) => Promise<unknown> | unknown): void;
   registerCommand(
     name: string,

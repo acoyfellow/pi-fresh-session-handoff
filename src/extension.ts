@@ -37,7 +37,18 @@ import {
 } from "./core/hooks.js";
 import type { CheckpointCriticalFacts, TaskManifestV1, ThresholdStage } from "./core/types.js";
 import { dejaAutoMemoryFactory } from "./hooks/deja-auto-memory.js";
-import { buildPrimer, cliRecallRunner, primerOptionsFrom } from "./hooks/deja-session-primer.js";
+import { createClefJudge, wranglerCredentials } from "./hooks/clef.js";
+import {
+  buildPrimer,
+  cliRecallRunner,
+  cliSignalRunner,
+  notesUsedInReply,
+  primerOptionsFrom,
+  primerSkipReason,
+  type Judge,
+  type RecallNote,
+  type SessionPrimerOptions,
+} from "./hooks/deja-session-primer.js";
 import { collectUntrustedInstructionData } from "./core/untrusted-instructions.js";
 import type { ExtensionApiLike, ExtensionCommandContextLike, ExtensionContextLike } from "./pi-types.js";
 
@@ -559,6 +570,15 @@ export async function waitForRunningHooks(sessionId: string, graceMs = HOOK_SHUT
   }
 }
 
+export function assistantTextOf(messages: unknown[]): string {
+  return messages
+    .filter((message): message is { role: string; content: unknown } => typeof message === "object" && message !== null && (message as { role?: unknown }).role === "assistant")
+    .flatMap((message) => (Array.isArray(message.content) ? message.content : []))
+    .filter((part): part is { type: "text"; text: string } => typeof part === "object" && part !== null && (part as { type?: unknown }).type === "text")
+    .map((part) => part.text)
+    .join("\n");
+}
+
 async function completeWithModel(ctx: ExtensionContextLike, prompt: string): Promise<string> {
   const complete = ctx.modelRegistry.complete;
   if (!ctx.model || typeof complete !== "function") throw new Error("current model is unavailable for hook completion");
@@ -694,21 +714,67 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
     }
   });
 
-  const primedSessions = new Set<string>();
+  const shownBySession = new Map<string, Set<string>>();
+  const pendingGrade = new Map<string, { notes: RecallNote[]; options: SessionPrimerOptions; cwd: string }>();
+  let clefJudge: { model: string; timeoutMs: number; judge: Judge } | undefined;
+  const judgeFor = (options: SessionPrimerOptions): Judge => {
+    if (!clefJudge || clefJudge.model !== options.clefModel || clefJudge.timeoutMs !== options.clefTimeoutMs) {
+      clefJudge = { model: options.clefModel, timeoutMs: options.clefTimeoutMs, judge: createClefJudge(options.clefModel, options.clefTimeoutMs, wranglerCredentials()) };
+    }
+    return clefJudge.judge;
+  };
+  const report = (data: Record<string, unknown>) => {
+    try {
+      pi.events?.emit("deja:primer", data);
+    } catch {
+      return;
+    }
+  };
+
   pi.on("before_agent_start", async (event, ctx) => {
     try {
-      const sessionId = ctx.sessionManager.getSessionId();
-      if (primedSessions.has(sessionId)) return undefined;
-      primedSessions.add(sessionId);
+      const start = event as { prompt?: unknown; messageType?: unknown };
+      if (start.messageType !== undefined && start.messageType !== "user") return undefined;
       const spec = (await loadHookSpecs(ctx.cwd)).find((candidate) => candidate.module === SESSION_PRIMER_MODULE);
       if (!spec) return undefined;
       const options = primerOptionsFrom(spec.options);
-      const prompt = (event as { prompt?: unknown }).prompt;
-      const primer = await buildPrimer(typeof prompt === "string" ? prompt : "", ctx.cwd, sessionId, options, cliRecallRunner(options));
-      if (!primer) return undefined;
-      return { message: { customType: "deja-session-primer", content: primer, display: false } };
+      const sessionId = ctx.sessionManager.getSessionId();
+      const prompt = typeof start.prompt === "string" ? start.prompt : "";
+      const skipped = primerSkipReason(prompt, options);
+      if (skipped) {
+        report({ sessionId, outcome: "skipped", reason: skipped });
+        return undefined;
+      }
+      const shown = shownBySession.get(sessionId) ?? new Set<string>();
+      const started = Date.now();
+      const primer = await buildPrimer(prompt, ctx.cwd, sessionId, options, cliRecallRunner(options), judgeFor(options), shown);
+      if (!primer) {
+        report({ sessionId, outcome: "nothing-relevant", ms: Date.now() - started });
+        return undefined;
+      }
+      for (const note of primer.notes) shown.add(note.id);
+      shownBySession.set(sessionId, shown);
+      pendingGrade.set(sessionId, { notes: primer.notes, options, cwd: ctx.cwd });
+      report({ sessionId, outcome: "injected", notes: primer.notes.length, considered: primer.considered, chars: primer.content.length, ms: Date.now() - started });
+      return { message: { customType: "deja-session-primer", content: primer.content, display: false } };
     } catch {
       return undefined;
+    }
+  });
+
+  pi.on("agent_end", async (event, ctx) => {
+    try {
+      const sessionId = ctx.sessionManager.getSessionId();
+      const pending = pendingGrade.get(sessionId);
+      if (!pending) return;
+      pendingGrade.delete(sessionId);
+      const reply = assistantTextOf((event as { messages?: unknown[] }).messages ?? []);
+      const used = await notesUsedInReply(reply, pending.notes, pending.options, judgeFor(pending.options));
+      const signal = cliSignalRunner(pending.options);
+      await Promise.allSettled(used.map((note) => signal(note.id, pending.cwd)));
+      report({ sessionId, outcome: "graded", shown: pending.notes.length, used: used.length });
+    } catch {
+      return;
     }
   });
 
