@@ -16,6 +16,8 @@ export interface SessionPrimerOptions {
   clefModel: string;
   clefTimeoutMs: number;
   automatedPrefixes: string[];
+  automatedPatterns: string[];
+  topicChangeFloor: number;
 }
 
 export const DEFAULT_AUTOMATED_PREFIXES = [
@@ -33,6 +35,28 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
   "From the coordinator",
 ];
 
+export const DEFAULT_AUTOMATED_PATTERNS = [
+  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/)`,
+  String.raw`^Run '[^']*\btest\b[^']*'`,
+];
+
+export const TOPIC_CHANGE_QUESTION = "Does the new request start a different task or topic from the earlier requests in this session?";
+
+export function topicChangeState(prompt: string, earlierPrompts: readonly string[]): string {
+  const earlier = earlierPrompts.slice(-5).map((text) => `- ${text.replace(/\s+/g, " ").slice(0, 300)}`);
+  return `Earlier requests in this session:\n${earlier.join("\n")}\n\nNew request: ${prompt.replace(/\s+/g, " ").slice(0, 400)}`;
+}
+
+export async function startsNewTopic(prompt: string, earlierPrompts: readonly string[], options: SessionPrimerOptions, judge: Judge | undefined): Promise<boolean> {
+  if (earlierPrompts.length === 0) return true;
+  if (!judge) return false;
+  try {
+    return (await judge(topicChangeState(prompt, earlierPrompts), TOPIC_CHANGE_QUESTION)) >= options.topicChangeFloor;
+  } catch {
+    return false;
+  }
+}
+
 export const DEFAULT_PRIMER_OPTIONS: SessionPrimerOptions = {
   dejaCommand: ["deja"],
   author: "pi/session-primer",
@@ -46,6 +70,8 @@ export const DEFAULT_PRIMER_OPTIONS: SessionPrimerOptions = {
   clefModel: "@cf/cloudflare/clef",
   clefTimeoutMs: 2_500,
   automatedPrefixes: DEFAULT_AUTOMATED_PREFIXES,
+  automatedPatterns: DEFAULT_AUTOMATED_PATTERNS,
+  topicChangeFloor: 0.5,
 };
 
 export function primerOptionsFrom(raw: Record<string, unknown> | undefined): SessionPrimerOptions {
@@ -68,6 +94,8 @@ export function primerOptionsFrom(raw: Record<string, unknown> | undefined): Ses
     clefModel: typeof source.clefModel === "string" && source.clefModel.trim() ? source.clefModel : base.clefModel,
     clefTimeoutMs: positive(source.clefTimeoutMs, base.clefTimeoutMs),
     automatedPrefixes: strings(source.automatedPrefixes, base.automatedPrefixes),
+    automatedPatterns: strings(source.automatedPatterns, base.automatedPatterns),
+    topicChangeFloor: share(source.topicChangeFloor, base.topicChangeFloor),
   };
 }
 
@@ -75,13 +103,22 @@ export function primerQuery(prompt: string, maxChars: number): string {
   return prompt.replace(/\s+/g, " ").trim().slice(0, maxChars);
 }
 
-export type PrimerSkipReason = "empty" | "automated" | "short";
+export type PrimerSkipReason = "empty" | "automated" | "short" | "same-topic";
+
+function matchesPattern(text: string, pattern: string): boolean {
+  try {
+    return new RegExp(pattern, "i").test(text);
+  } catch {
+    return false;
+  }
+}
 
 export function primerSkipReason(prompt: string, options: SessionPrimerOptions): PrimerSkipReason | undefined {
   const text = prompt.trim();
   if (!text) return "empty";
   const lowered = text.toLowerCase();
   if (options.automatedPrefixes.some((prefix) => lowered.startsWith(prefix.toLowerCase()))) return "automated";
+  if (options.automatedPatterns.some((pattern) => matchesPattern(text, pattern))) return "automated";
   if (text.split(/\s+/).length < options.minPromptWords) return "short";
   return undefined;
 }
@@ -160,10 +197,12 @@ export async function buildPrimer(
   recall: RecallRunner,
   judge: Judge | undefined,
   alreadyShown: ReadonlySet<string> = new Set(),
+  earlierPrompts: readonly string[] = [],
 ): Promise<PrimerResult | undefined> {
   if (primerSkipReason(prompt, options)) return undefined;
   const query = primerQuery(prompt, options.maxPromptChars);
   try {
+    if (!(await startsNewTopic(query, earlierPrompts, options, judge))) return undefined;
     const candidates = (await recall(query, cwd, sessionId)).filter((note) => !alreadyShown.has(note.id)).slice(0, options.maxNotes * 2);
     if (candidates.length === 0) return undefined;
     const notes = await selectRelevant(query, candidates, options, judge);

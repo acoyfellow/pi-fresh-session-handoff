@@ -44,6 +44,27 @@ describe("deja session primer", () => {
     expect(called).toBe(false);
   });
 
+  it("skips eval harness prompts and mid-session replies on the same topic", () => {
+    expect(primerSkipReason('<file name="/var/folders/hb/x/T/rbm-abc/cron-1.md"> do the task in this file', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/home/u/.context/reviews/recipe/ns/2/t.md"> review it now please', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Run 'npm test'. If it passes, reply exactly: DONE.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="notes.md"> summarise this design document for me', DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
+  });
+
+  it("mid-session, re-primes only when the judge says the topic changed", async () => {
+    const earlier = ["refresh the deja dogfood dashboard html with current usage"];
+    const topicJudge: Judge = async (state, question) => (question.includes("different task") ? (state.includes("braintrust") ? 0.89 : 0.07) : 0.97);
+    const recall = async () => [DEPLOY];
+    expect(await buildPrimer("ok dogfood checkin, hows it going can u update the html file", "/tmp", "s1", DEFAULT_PRIMER_OPTIONS, recall, topicJudge, new Set(), earlier)).toBeUndefined();
+    expect((await buildPrimer("now rotate the braintrust api key and purge the terrarium cache", "/tmp", "s1", DEFAULT_PRIMER_OPTIONS, recall, topicJudge, new Set(), earlier))?.notes).toEqual([DEPLOY]);
+    expect((await buildPrimer("ok dogfood checkin, hows it going can u update the html file", "/tmp", "s1", DEFAULT_PRIMER_OPTIONS, recall, topicJudge, new Set(), []))?.notes).toEqual([DEPLOY]);
+    const failing: Judge = async (_state, question) => {
+      if (question.includes("different task")) throw new Error("down");
+      return 0.97;
+    };
+    expect(await buildPrimer("now rotate the braintrust api key and purge the terrarium cache", "/tmp", "s1", DEFAULT_PRIMER_OPTIONS, recall, failing, new Set(), earlier)).toBeUndefined();
+  });
+
   it("injects only notes the judge rates relevant", async () => {
     const primer = await buildPrimer(PROMPT, "/tmp", "s1", DEFAULT_PRIMER_OPTIONS, async () => [STORM, DEPLOY], deployJudge);
     expect(primer?.notes.map((note) => note.id)).toEqual([DEPLOY.id]);

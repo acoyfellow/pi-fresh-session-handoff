@@ -715,6 +715,7 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
   });
 
   const shownBySession = new Map<string, Set<string>>();
+  const promptsBySession = new Map<string, string[]>();
   const pendingGrade = new Map<string, { notes: RecallNote[]; options: SessionPrimerOptions; cwd: string }>();
   let clefJudge: { model: string; timeoutMs: number; judge: Judge } | undefined;
   const judgeFor = (options: SessionPrimerOptions): Judge => {
@@ -740,6 +741,8 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
       const options = primerOptionsFrom(spec.options);
       const sessionId = ctx.sessionManager.getSessionId();
       const prompt = typeof start.prompt === "string" ? start.prompt : "";
+      const earlierPrompts = promptsBySession.get(sessionId) ?? [];
+      promptsBySession.set(sessionId, [...earlierPrompts, prompt].slice(-20));
       const skipped = primerSkipReason(prompt, options);
       if (skipped) {
         report({ sessionId, outcome: "skipped", reason: skipped });
@@ -747,7 +750,7 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
       }
       const shown = shownBySession.get(sessionId) ?? new Set<string>();
       const started = Date.now();
-      const primer = await buildPrimer(prompt, ctx.cwd, sessionId, options, cliRecallRunner(options), judgeFor(options), shown);
+      const primer = await buildPrimer(prompt, ctx.cwd, sessionId, options, cliRecallRunner(options), judgeFor(options), shown, earlierPrompts);
       if (!primer) {
         report({ sessionId, outcome: "nothing-relevant", ms: Date.now() - started });
         return undefined;
