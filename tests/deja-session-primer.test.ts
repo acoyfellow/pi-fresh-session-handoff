@@ -11,7 +11,7 @@ import {
   type Judge,
   type RecallNote,
 } from "../src/hooks/deja-session-primer.js";
-import { assistantTextOf } from "../src/extension.js";
+import { assistantTextOf, earlierUserPrompts } from "../src/extension.js";
 
 const DEPLOY: RecallNote = { id: "01KYAPNRVAPH9H3R0FJZWDPTXR", score: -12, text: "Marketing deploy runs deploy.sh and checks health.json", formatted: "[medium] 01KYAPNRVAPH9H3R0FJZWDPTXR  kept\n  Marketing deploy runs deploy.sh" };
 const STORM: RecallNote = { id: "01M0000000000000000000STRM", score: -9.5, text: "WebSocket 401 storm traced to stale Access cookies", formatted: "[medium] 01M0000000000000000000STRM  kept\n  WebSocket 401 storm" };
@@ -110,6 +110,15 @@ describe("deja session primer", () => {
   it("reads options with safe fallbacks", () => {
     expect(primerOptionsFrom({ dejaCommand: ["bun", "cli.ts"], maxNotes: 2, relevanceFloor: 0.8 })).toMatchObject({ dejaCommand: ["bun", "cli.ts"], maxNotes: 2, relevanceFloor: 0.8, timeoutMs: 4000 });
     expect(primerOptionsFrom({ dejaCommand: [], relevanceFloor: 3, minPromptWords: -1 })).toMatchObject({ dejaCommand: ["deja"], relevanceFloor: 0.7, minPromptWords: 5 });
+  });
+
+  it("reads earlier prompts from the saved session so a reload does not look like a new session", () => {
+    const user = (text: string) => ({ type: "message", message: { role: "user", content: [{ type: "text", text }] } });
+    const assistant = (text: string) => ({ type: "message", message: { role: "assistant", content: [{ type: "text", text }] } });
+    const entries = [user("one"), assistant("a"), user("two"), { type: "custom_message" }, user("three"), user("four"), user("five"), user("six"), user("now")];
+    expect(earlierUserPrompts(entries, "now")).toEqual(["two", "three", "four", "five", "six"]);
+    expect(earlierUserPrompts(entries.slice(0, -1), "now")).toEqual(["two", "three", "four", "five", "six"]);
+    expect(earlierUserPrompts([], "first")).toEqual([]);
   });
 
   it("collects assistant text from a run's messages", () => {

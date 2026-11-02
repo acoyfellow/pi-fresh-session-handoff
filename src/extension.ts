@@ -570,6 +570,12 @@ export async function waitForRunningHooks(sessionId: string, graceMs = HOOK_SHUT
   }
 }
 
+export function earlierUserPrompts(entries: unknown[], currentPrompt: string): string[] {
+  const prompts = conversationFromEntries(entries).filter((turn) => turn.role === "user").map((turn) => turn.text);
+  if (prompts.length > 0 && prompts[prompts.length - 1].trim() === currentPrompt.trim()) prompts.pop();
+  return prompts.slice(-5);
+}
+
 export function assistantTextOf(messages: unknown[]): string {
   return messages
     .filter((message): message is { role: string; content: unknown } => typeof message === "object" && message !== null && (message as { role?: unknown }).role === "assistant")
@@ -715,7 +721,6 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
   });
 
   const shownBySession = new Map<string, Set<string>>();
-  const promptsBySession = new Map<string, string[]>();
   const pendingGrade = new Map<string, { notes: RecallNote[]; options: SessionPrimerOptions; cwd: string }>();
   let clefJudge: { model: string; timeoutMs: number; judge: Judge } | undefined;
   const judgeFor = (options: SessionPrimerOptions): Judge => {
@@ -741,8 +746,7 @@ export default function createFreshSessionHandoffExtension(pi: ExtensionApiLike)
       const options = primerOptionsFrom(spec.options);
       const sessionId = ctx.sessionManager.getSessionId();
       const prompt = typeof start.prompt === "string" ? start.prompt : "";
-      const earlierPrompts = promptsBySession.get(sessionId) ?? [];
-      promptsBySession.set(sessionId, [...earlierPrompts, prompt].slice(-20));
+      const earlierPrompts = earlierUserPrompts(ctx.sessionManager.getEntries(), prompt);
       const skipped = primerSkipReason(prompt, options);
       if (skipped) {
         report({ sessionId, outcome: "skipped", reason: skipped });
