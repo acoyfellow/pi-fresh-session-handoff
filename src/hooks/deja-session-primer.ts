@@ -36,7 +36,7 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [
-  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/)`,
+  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/|/eval/|/evals/|/results/|/fixtures/)`,
   String.raw`^Run '[^']*\btest\b[^']*'`,
 ];
 
