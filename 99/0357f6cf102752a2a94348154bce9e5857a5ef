@@ -1,0 +1,21 @@
+src/hooks/deja-session-primer.ts
+  s_cad21ecb728adb::t_ff31a7991d2287 37,41
+tests/deja-session-primer.test.ts
+  s_cad21ecb728adb::t_853916c41acd7f 52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "990357f6cf102752a2a94348154bce9e5857a5ef",
+  "prompts": {},
+  "sessions": {
+    "s_cad21ecb728adb": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019eb430-11fe-7acf-8326-0dbeb9469573",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jordan Coeyman <jcoeyman@cloudflare.com>"
+    }
+  }
+}
