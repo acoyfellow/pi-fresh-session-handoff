@@ -33,6 +33,7 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
   "[terraloop",
   "terraloop tick",
   "From the coordinator",
+  "Finish this small feature and ship it.",
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [

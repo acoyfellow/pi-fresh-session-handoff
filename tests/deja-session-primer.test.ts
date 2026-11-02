@@ -48,6 +48,7 @@ describe("deja session primer", () => {
     expect(primerSkipReason('<file name="/var/folders/hb/x/T/rbm-abc/cron-1.md"> do the task in this file', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="/home/u/.context/reviews/recipe/ns/2/t.md"> review it now please', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="/Users/u/review-process/eval/results/20261102T124117Z/prompt-30.txt"> You are choosing a candidate', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Finish this small feature and ship it. 1. Add a GET /health route to src/index.ts", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("Run 'npm test'. If it passes, reply exactly: DONE.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="notes.md"> summarise this design document for me', DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
   });
