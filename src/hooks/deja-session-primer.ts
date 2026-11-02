@@ -34,10 +34,11 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
   "terraloop tick",
   "From the coordinator",
   "Finish this small feature and ship it.",
+  "Run this bash command:",
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [
-  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/|/eval/|/evals/|/results/|/fixtures/)`,
+  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
   String.raw`^Run '[^']*\btest\b[^']*'`,
 ];
 
