@@ -35,11 +35,14 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
   "From the coordinator",
   "Finish this small feature and ship it.",
   "Run this bash command:",
+  "One finding from a code review is disputed.",
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [
-  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/recipe/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
+  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
   String.raw`^Run '[^']*\btest\b[^']*'`,
+  String.raw`^Read \S+\.prompt and do exactly what it says`,
+  String.raw`^You are in \S+, a git worktree of`,
 ];
 
 export const TOPIC_CHANGE_QUESTION = "Does the new request start a different task or topic from the earlier requests in this session?";

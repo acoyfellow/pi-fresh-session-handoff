@@ -51,6 +51,11 @@ describe("deja session primer", () => {
     expect(primerSkipReason("Finish this small feature and ship it. 1. Add a GET /health route to src/index.ts", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="/Users/u/tether/experiments/readback-real/label-prompt.md"> label these', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("Run this bash command: sleep 30; echo awake. Then reply with exactly one word", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/Users/u/review-process/reviews/ns-sesh/20/t2.txt"> Correctness review of sesh', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Read ../coil.prompt and do exactly what it says.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("One finding from a code review is disputed. Read only the code it cites", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("You are in /Users/u/.depbump/skin, a git worktree of Jordan's repo skin (branch deps/x)", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("did we fully update our repository for reviews.?", DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
     expect(primerSkipReason("Run 'npm test'. If it passes, reply exactly: DONE.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="notes.md"> summarise this design document for me', DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
   });
