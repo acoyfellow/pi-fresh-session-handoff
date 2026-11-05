@@ -39,10 +39,13 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [
-  String.raw`^<file name="[^"]*(?:/var/folders/|/reviews/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
+  String.raw`^<file name="[^"]*(?:/var/folders/|/private/tmp/|/tmp/|/reviews/|/votes/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
   String.raw`^Run '[^']*\btest\b[^']*'`,
   String.raw`^Read \S+\.prompt and do exactly what it says`,
   String.raw`^You are in \S+, a git worktree of`,
+  String.raw`^(?:Read code\. )?(?:The MR diff is: |Finding: - \*\*)`,
+  String.raw`^Reply VOTE: `,
+  String.raw`^Read \S+/BRIEF\.md and carry it out`,
 ];
 
 export const TOPIC_CHANGE_QUESTION = "Does the new request start a different task or topic from the earlier requests in this session?";

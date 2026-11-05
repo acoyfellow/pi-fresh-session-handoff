@@ -54,6 +54,12 @@ describe("deja session primer", () => {
     expect(primerSkipReason('<file name="/Users/u/review-process/reviews/ns-sesh/20/t2.txt"> Correctness review of sesh', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("Read ../coil.prompt and do exactly what it says.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("One finding from a code review is disputed. Read only the code it cites", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/private/tmp/hc/a2/votes/c5-0.out.task"> One finding', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Finding: - **IMPORTANT** `digest/client.ts:221` the daily lines", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Read code. The MR diff is: git diff HEAD~1 HEAD. Finding: x", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Reply VOTE: REAL. - **IMPORTANT** `a.ts:1`", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("Read hillclimb/BRIEF.md and carry it out.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason("what did we find about the daily lines in admin analytics", DEFAULT_PRIMER_OPTIONS)).not.toBe("automated");
     expect(primerSkipReason("You are in /Users/u/.depbump/skin, a git worktree of Jordan's repo skin (branch deps/x)", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("did we fully update our repository for reviews.?", DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
     expect(primerSkipReason("Run 'npm test'. If it passes, reply exactly: DONE.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
