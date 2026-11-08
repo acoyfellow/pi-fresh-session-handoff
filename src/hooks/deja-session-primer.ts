@@ -39,7 +39,7 @@ export const DEFAULT_AUTOMATED_PREFIXES = [
 ];
 
 export const DEFAULT_AUTOMATED_PATTERNS = [
-  String.raw`^<file name="[^"]*(?:/var/folders/|/private/tmp/|/tmp/|/reviews/|/votes/|/eval/|/evals/|/results/|/fixtures/|/experiments/)`,
+  String.raw`^<file name="[^"]*(?:/var/folders/|/private/tmp/|/tmp/|/reviews/|/votes/|/eval/|/evals/|/results/|/fixtures/|/experiments/|/review-lab-data/|/judge-[^/"]*/)`,
   String.raw`^Run '[^']*\btest\b[^']*'`,
   String.raw`^Read \S+\.prompt and do exactly what it says`,
   String.raw`^You are in \S+, a git worktree of`,

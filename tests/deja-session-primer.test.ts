@@ -55,6 +55,9 @@ describe("deja session primer", () => {
     expect(primerSkipReason("Read ../coil.prompt and do exactly what it says.", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("One finding from a code review is disputed. Read only the code it cites", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason('<file name="/private/tmp/hc/a2/votes/c5-0.out.task"> One finding', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/Users/u/cloudflare/review-lab-data/judge-plain3/4281eeb6676fff08.task"> You grade code reviews', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/Users/u/x/judge-merged-m1/1.task"> You grade', DEFAULT_PRIMER_OPTIONS)).toBe("automated");
+    expect(primerSkipReason('<file name="/Users/u/cloudflare/deja/src/fsm.ts"> look at this', DEFAULT_PRIMER_OPTIONS)).toBeUndefined();
     expect(primerSkipReason("Finding: - **IMPORTANT** `digest/client.ts:221` the daily lines", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("Read code. The MR diff is: git diff HEAD~1 HEAD. Finding: x", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
     expect(primerSkipReason("Reply VOTE: REAL. - **IMPORTANT** `a.ts:1`", DEFAULT_PRIMER_OPTIONS)).toBe("automated");
